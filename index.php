@@ -29,6 +29,36 @@
 
   <body id="page-top">
 
+  <?php
+
+    session_start();
+
+    require_once __DIR__ . '/vendor/autoload.php'; // change path as needed
+
+    // Include required libraries
+    use Facebook\Facebook;
+    use Facebook\Exceptions\FacebookResponseException;
+    use Facebook\Exceptions\FacebookSDKException;
+
+    /*
+    * Configuration and setup Facebook SDK
+    */
+    $appId         = '283120945560809'; //Facebook App ID
+    $appSecret     = '656d9a15b0fef0d20134e4ad05a183d5'; //Facebook App Secret
+    $redirectURL   = 'http://friendlybike.viniciustessmann.web6213.kinghost.net'; //Callback URL
+    // $fbPermissions = array('email');  //Optional permissions
+
+    $fb = new Facebook(array(
+        'app_id' => $appId,
+        'app_secret' => $appSecret,
+        'default_graph_version' => 'v2.2',
+    ));
+    
+    $helper = $fb->getRedirectLoginHelper();
+    $permissions = []; // Optional information that your app can access, such as 'email'
+    $loginUrl = $helper->getLoginUrl('http://friendlybike.viniciustessmann.web6213.kinghost.net/form.php', $permissions);
+    
+    ?>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg bg-secondary fixed-top text-uppercase" id="mainNav">
       <div class="container">
@@ -60,6 +90,7 @@
         <h1 class="text-uppercase mb-0">FRIENDLY BIKE</h1>
         <hr class="star-light">
         <h2 class="font-weight-light mb-0">A plataforma colaborativa de ciclistas para ciclistas</h2>
+        
       </div>
 
     </header>
@@ -68,16 +99,10 @@
     <section class="portfolio" id="portfolio">
       <div class="container">
         <h2 class="text-center text-uppercase text-secondary mb-0">NOSSOS AMIGOS XD</h2>
-        <a href="https://www.facebook.com/dialog/oauth?client_id=283120945560809&redirect_uri=http://friendlybike.viniciustessmann.web6213.kinghost.net/&scope=COMMA_SEPARATED_LIST_OF_PERMISSION_NAMES">Entrar com Facebook</a>
       </div>
     </section>
     <div class="row">
         <div class="col-md-12 col-lg-12">
-
-        <fb:login-button 
-        scope="public_profile,email"
-        onlogin="checkLoginState();">
-        </fb:login-button>
             <div id="map">
             </div>
         </div>
@@ -143,9 +168,9 @@
           </div>
         </div>
         <div class="text-center mt-4">
-          <a class="btn btn-xl btn-outline-light" href="#">
+          <a class="btn btn-xl btn-outline-light" href="<?php echo $loginUrl ?>">
             <i class="fa fa-download mr-2"></i>
-            Conheça os pontos
+            Compartilhe uma local 
           </a>
         </div>
       </div>

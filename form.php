@@ -31,9 +31,11 @@ $arr_result = getFBResponse($post);
 $access_token = $arr_result->access_token;
 
 $response = $fb->get('/me?fields=id,first_name,last_name,picture,email', $access_token);
+$user = $response->getGraphUser();
 
 echo '<pre>';
-var_dump($response->getGraphUser());
+var_dump($user['id']);
+var_dump($user['first_name']);
 die;
 
 // $user = $fb->api('/me');
