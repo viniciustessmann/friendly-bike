@@ -23,7 +23,9 @@ $fb = new Facebook(array(
     'default_graph_version' => 'v2.2',
 ));
 
-https://www.facebook.com/v2.2/dialog/oauth?client_id=283120945560809&state=1986cc18486f2acf01a591c7db82ae67&response_type=code&sdk=php-sdk-5.6.1&redirect_uri=http%3A%2F%2Ffriendlybike.viniciustessmann.web6213.kinghost.net%2Fform.php&scope=
+
+$ipAddr = getUserIP();
+$geoIP  = json_decode(file_get_contents("http://freegeoip.net/json/$ipAddr"), true);
 
 $post = ['client_id'=> $appId, "redirect_uri" => $redirectURL, "client_secret" => $appSecret, 'code' => $_GET['code']];
 $arr_result = getFBResponse($post);
@@ -33,9 +35,19 @@ $access_token = $arr_result->access_token;
 $response = $fb->get('/me?fields=id,first_name,last_name,picture,email', $access_token);
 $user = $response->getGraphUser();
 
-echo '<pre>';
+$facebook_data_array = array(
+    'base_url'     => 'https://graph.facebook.com/v2.10/',
+    'node'         => 'search?',
+    'query_param'  => 'q=',
+    'root_node'    => 'type=place',
+    'coords'       => 'center='.$geoIP['latitude'].','.$geoIP['longitude'],
+    'fields'       => 'fields=name,talking_about_count',
+    'access_token' => 'access_token=' . $access_token
+  );
+
 var_dump($user['id']);
 var_dump($user['first_name']);
+var_dump(get_facebook_data($facebook_data_array));
 die;
 
 // $user = $fb->api('/me');
@@ -51,5 +63,45 @@ function getFBResponse($arr_post = []) {
     $response = curl_exec($ch);
     return json_decode($response);
 }
+
+
+function get_facebook_data( $args ) {
+
+    /* Concatenate the array values. */
+    $url = $args['base_url'] . $args['node'] . $args['query_param'] . '&' . $args['root_node'] . '&' . $args['coords'] . '&' . $args['fields'] . '&' . $args['access_token'];
+  
+    /* Initiate request. Store the results in the $response varialbe */
+    $ch = curl_init();
+    curl_setopt( $ch, CURLOPT_URL, $url );
+    $response = curl_exec( $ch );
+    curl_close( $ch );
+  
+    /* Return the values in the $response variable. */
+    return json_decode($response);
+  
+  }
+
+
+  function getUserIP()
+  {
+      $client  = @$_SERVER['HTTP_CLIENT_IP'];
+      $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+      $remote  = $_SERVER['REMOTE_ADDR'];
+
+      if(filter_var($client, FILTER_VALIDATE_IP))
+      {
+          $ip = $client;
+      }
+      elseif(filter_var($forward, FILTER_VALIDATE_IP))
+      {
+          $ip = $forward;
+      }
+      else
+      {
+          $ip = $remote;
+      }
+
+      return $ip;
+  }
 
 ?>
